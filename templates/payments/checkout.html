@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Razorpay Payment Checkout | UniEnroll{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Custom Razorpay Modal Styles */
+    .razorpay-modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+    .razorpay-modal-overlay.active {
+        display: flex;
+        animation: fadeIn 0.25s ease-out;
+    }
+    .razorpay-card {
+        background: #ffffff;
+        width: 100%;
+        max-width: 480px;
+        border-radius: 16px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .razorpay-header {
+        background: linear-gradient(135deg, #0c2340 0%, #1e3a8a 100%);
+        color: #ffffff;
+        padding: 20px 24px;
+        position: relative;
+    }
+    .razorpay-header .close-btn {
+        position: absolute;
+        top: 16px; right: 16px;
+        background: rgba(255, 255, 255, 0.15);
+        border: none;
+        color: white;
+        width: 30px; height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center; justify-content: center;
+    }
+    .razorpay-body {
+        padding: 24px;
+    }
+    .nav-payment-method .nav-link {
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.2s ease;
+    }
+    .nav-payment-method .nav-link.active {
+        border-color: #2563eb;
+        background-color: #eff6ff;
+        color: #1d4ed8;
+    }
+    .processing-spinner {
+        display: none;
+        text-align: center;
+        padding: 30px 0;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-8 col-lg-6">
+        <div class="card card-dit shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="card-header bg-gradient bg-primary text-white text-center py-4" style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);">
+                <div class="rounded-circle bg-white text-primary d-inline-flex p-3 mb-2 shadow-sm">
+                    <i class="fa-solid fa-credit-card fs-2 text-primary"></i>
+                </div>
+                <h4 class="fw-bold mb-0">Razorpay Payment Gateway</h4>
+                <small class="text-light opacity-75">Demo Institute of Technology (DIT) Fee Checkout</small>
+            </div>
+            
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold fs-6 mb-2">
+                        Transaction ID: {{ payment.transaction_id }}
+                    </span>
+                    <h2 class="display-5 fw-bold text-success mt-2">₹{{ payment.amount|floatformat:2 }}</h2>
+                    <p class="text-muted">Total Semester Fee for {{ enrollment.semester.name }}</p>
+                </div>
+
+                <div class="border-top border-bottom py-3 mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Student Name:</span>
+                        <strong class="text-dark">{{ user.get_full_name }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Registered Email:</span>
+                        <strong class="text-dark">{{ user.email }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Enrolled Courses:</span>
+                        <strong class="text-primary">{{ enrollment.items.count }} Courses ({{ enrollment.total_credits }} Credits)</strong>
+                    </div>
+                </div>
+
+                <!-- Hidden form for Razorpay response submission -->
+                <form id="razorpay-form" method="post" action="{% url 'payment_success' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="transaction_id" value="{{ payment.transaction_id }}">
+                    <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
+                    <input type="hidden" name="razorpay_order_id" id="razorpay_order_id" value="{{ payment.razorpay_order_id }}">
+                    <input type="hidden" name="razorpay_signature" id="razorpay_signature">
+                </form>
+
+                <!-- Payment Buttons -->
+                <div class="d-grid gap-3">
+                    <button type="button" onclick="openRazorpayModal()" class="btn btn-warning btn-lg fw-bold rounded-pill shadow-sm py-3 text-dark">
+                        <i class="fa-solid fa-shield-halved me-2"></i> Launch Razorpay Gateway Modal
+                    </button>
+
+                    <button type="button" onclick="quickSimulatePayment()" class="btn btn-outline-success btn-lg fw-bold rounded-pill py-3">
+                        <i class="fa-solid fa-bolt me-2"></i> Quick 1-Click Instant Test Success
+                    </button>
+                </div>
+            </div>
+
+            <div class="card-footer bg-light text-center py-3">
+                <span class="badge badge-demo py-2 px-3">
+                    <i class="fa-solid fa-shield-cat me-1"></i> Razorpay Test Environment & MongoDB Audit Logging Active
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Interactive Razorpay Modal Overlay -->
+<div id="razorpayModal" class="razorpay-modal-overlay">
+    <div class="razorpay-card">
+        <!-- Razorpay Header -->
+        <div class="razorpay-header">
+            <button type="button" class="close-btn" onclick="closeRazorpayModal()">&times;</button>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="fa-solid fa-shield-check text-warning fs-4"></i>
+                <h5 class="mb-0 fw-bold">Razorpay</h5>
+                <span class="badge bg-warning text-dark ms-auto font-monospace">TEST MODE</span>
+            </div>
+            <div class="small opacity-85">Demo Institute of Technology &bull; ₹{{ payment.amount|floatformat:2 }}</div>
+        </div>
+
+        <!-- Razorpay Body -->
+        <div class="razorpay-body" id="razorpayModalBody">
+            <div class="mb-3">
+                <small class="text-muted text-uppercase fw-semibold d-block mb-2">Select Payment Method</small>
+                <div class="nav nav-payment-method flex-column">
+                    <button type="button" class="nav-link active text-start" onclick="selectMethod(this, 'card')">
+                        <i class="fa-solid fa-credit-card text-primary fs-5"></i>
+                        <div>
+                            <div>Cards (Credit / Debit)</div>
+                            <small class="text-muted fw-normal">Visa, MasterCard, RuPay, Maestro</small>
+                        </div>
+                    </button>
+                    <button type="button" class="nav-link text-start" onclick="selectMethod(this, 'upi')">
+                        <i class="fa-solid fa-mobile-screen-button text-success fs-5"></i>
+                        <div>
+                            <div>UPI / QR Code</div>
+                            <small class="text-muted fw-normal">Google Pay, PhonePe, Paytm, BHIM</small>
+                        </div>
+                    </button>
+                    <button type="button" class="nav-link text-start" onclick="selectMethod(this, 'netbanking')">
+                        <i class="fa-solid fa-building-columns text-info fs-5"></i>
+                        <div>
+                            <div>Netbanking</div>
+                            <small class="text-muted fw-normal">SBI, HDFC, ICICI, Axis, Kotak</small>
+                        </div>
+                    </button>
+                    <button type="button" class="nav-link text-start" onclick="selectMethod(this, 'credits')">
+                        <i class="fa-solid fa-award text-warning fs-5"></i>
+                        <div>
+                            <div>University Fake Credits</div>
+                            <small class="text-muted fw-normal">DIT Test Credit Balance (Available)</small>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="d-grid mt-4">
+                <button type="button" onclick="processModalPayment()" class="btn btn-primary btn-lg fw-bold rounded-3 py-3" style="background-color: #2563eb;">
+                    Pay ₹{{ payment.amount|floatformat:2 }}
+                </button>
+            </div>
+            
+            <div class="text-center mt-3">
+                <small class="text-muted"><i class="fa-solid fa-lock text-success me-1"></i> Secured by 256-bit Razorpay Encryption</small>
+            </div>
+        </div>
+
+        <!-- Processing State Spinner -->
+        <div class="processing-spinner" id="razorpayProcessing">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <h5 class="fw-bold text-dark">Processing Payment...</h5>
+            <p class="text-muted small mb-0">Connecting to Razorpay Bank Server & generating receipt...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function openRazorpayModal() {
+        document.getElementById('razorpayModal').classList.add('active');
+    }
+
+    function closeRazorpayModal() {
+        document.getElementById('razorpayModal').classList.remove('active');
+    }
+
+    function selectMethod(btn, method) {
+        var links = document.querySelectorAll('.nav-payment-method .nav-link');
+        links.forEach(function(l){ l.classList.remove('active'); });
+        btn.classList.add('active');
+    }
+
+    function processModalPayment() {
+        document.getElementById('razorpayModalBody').style.display = 'none';
+        document.getElementById('razorpayProcessing').style.display = 'block';
+
+        setTimeout(function() {
+            var randomPayId = "pay_rzp_" + Math.random().toString(36).substring(2, 12);
+            var randomSig = "sig_rzp_" + Math.random().toString(36).substring(2, 16);
+            document.getElementById('razorpay_payment_id').value = randomPayId;
+            document.getElementById('razorpay_signature').value = randomSig;
+            document.getElementById('razorpay-form').submit();
+        }, 1200);
+    }
+
+    function quickSimulatePayment() {
+        var randomPayId = "pay_quick_" + Math.random().toString(36).substring(2, 12);
+        var randomSig = "sig_quick_" + Math.random().toString(36).substring(2, 16);
+        document.getElementById('razorpay_payment_id').value = randomPayId;
+        document.getElementById('razorpay_signature').value = randomSig;
+        document.getElementById('razorpay-form').submit();
+    }
+</script>
+{% endblock %}

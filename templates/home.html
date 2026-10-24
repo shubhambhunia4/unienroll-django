@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}UniEnroll | Demo Institute of Technology{% endblock %}
+
+{% block content %}
+<div class="row align-items-center mb-5">
+    <div class="col-lg-8 mx-auto text-center">
+        <div class="hero-banner p-5 my-3">
+            <span class="badge bg-warning text-dark mb-3 px-3 py-2 rounded-pill fw-bold text-uppercase tracking-wider">
+                <i class="fa-solid fa-university me-1"></i> Demo Institute of Technology
+            </span>
+            <h1 class="display-4 fw-bold mb-3">UniEnroll</h1>
+            <p class="lead mb-4">
+                University Course Enrollment & Semester Fee Management System
+            </p>
+            <p class="fs-5 text-light opacity-90 mb-4">
+                Register for your semester. Select your courses. View your fees. Complete your payment.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="btn btn-warning btn-lg px-4 fw-bold rounded-pill text-dark shadow-sm">
+                        <i class="fa-solid fa-gauge me-2"></i> Go to Dashboard
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-warning btn-lg px-4 fw-bold rounded-pill text-dark shadow-sm">
+                        <i class="fa-solid fa-right-to-bracket me-2"></i> Student Login
+                    </a>
+                    <a href="{% url 'register' %}" class="btn btn-outline-light btn-lg px-4 rounded-pill shadow-sm">
+                        <i class="fa-solid fa-user-plus me-2"></i> New Student Registration
+                    </a>
+                {% endif %}
+            </div>
+            <div class="mt-4 pt-2">
+                <span class="badge badge-demo py-2 px-3 fs-7">
+                    <i class="fa-solid fa-circle-info me-1"></i> Prototype / Demo Application - No real money will be charged
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card card-dit h-100 p-4">
+            <div class="card-body text-center">
+                <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-inline-flex p-3 mb-3 fs-3">
+                    <i class="fa-solid fa-book-open"></i>
+                </div>
+                <h5 class="card-title fw-bold">Course Selection</h5>
+                <p class="card-text text-muted">
+                    Browse eligible semester course offerings, view available seats, live credit bounds validation, and instant course cart.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-dit h-100 p-4">
+            <div class="card-body text-center">
+                <div class="rounded-circle bg-success bg-opacity-10 text-success d-inline-flex p-3 mb-3 fs-3">
+                    <i class="fa-solid fa-calculator"></i>
+                </div>
+                <h5 class="card-title fw-bold">Transparent Fee Engine</h5>
+                <p class="card-text text-muted">
+                    Automated fee summary breakdown including course fees, mandatory university fees, discounts, and previous semester dues.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-dit h-100 p-4">
+            <div class="card-body text-center">
+                <div class="rounded-circle bg-warning bg-opacity-10 text-warning d-inline-flex p-3 mb-3 fs-3">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+                <h5 class="card-title fw-bold">Mock Gateway & Receipts</h5>
+                <p class="card-text text-muted">
+                    Simulate instant payment success or failure with transaction rollback safeguards, receipt printing, and MongoDB audit logging.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

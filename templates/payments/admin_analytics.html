@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block title %}Executive Admin Analytics & Financial Control | UniEnroll{% endblock %}
+
+{% block content %}
+<!-- Banner Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="hero-banner p-4 p-md-5 rounded-4 shadow-sm bg-dark text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <span class="badge bg-warning text-dark mb-2 px-3 py-1 rounded-pill fw-bold text-uppercase">
+                        <i class="fa-solid fa-chart-pie me-1"></i> Executive Analytics
+                    </span>
+                    <h2 class="display-6 fw-bold mb-1">Financial & Student Revenue Analytics</h2>
+                    <p class="mb-0 text-light opacity-90">
+                        <i class="fa-solid fa-building-columns me-1"></i> Term: <strong>{{ semester.name }}</strong> &bull; Generated: {{ now|date:"F d, Y - H:i" }}
+                    </p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'admin_financial_report' %}" class="btn btn-warning btn-lg fw-bold px-4 rounded-pill shadow text-dark">
+                        <i class="fa-solid fa-file-invoice-dollar me-2"></i> Financial Year Report (FY 2026-27)
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Key Performance Metrics Row -->
+<div class="row g-4 mb-4">
+    <!-- Total Registered Students -->
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white border-start border-4 border-primary">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h6 class="text-muted text-uppercase small fw-semibold mb-1">Total Registered Students</h6>
+                    <h2 class="fw-bold text-primary mb-0">{{ total_students }}</h2>
+                </div>
+                <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3 fs-3">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+            </div>
+            <div class="small text-muted">
+                <i class="fa-solid fa-graduation-cap me-1 text-primary"></i> Active DIT Student Enrollments
+            </div>
+        </div>
+    </div>
+
+    <!-- Students Paid Fees -->
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white border-start border-4 border-success">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h6 class="text-muted text-uppercase small fw-semibold mb-1">Students Paid Fees</h6>
+                    <h2 class="fw-bold text-success mb-0">{{ paid_students_count }} <span class="fs-6 fw-normal text-muted">({{ paid_percentage }}%)</span></h2>
+                </div>
+                <div class="rounded-circle bg-success bg-opacity-10 text-success p-3 fs-3">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+            </div>
+            <div class="progress mb-2" style="height: 6px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ paid_percentage }}%;"></div>
+            </div>
+            <div class="small text-muted">
+                Pending Fees: <strong class="text-warning">{{ pending_students_count }} Students</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Revenue Collected -->
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white border-start border-4 border-warning">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h6 class="text-muted text-uppercase small fw-semibold mb-1">Total Revenue Collected</h6>
+                    <h2 class="fw-bold text-dark mb-0">₹{{ total_revenue|floatformat:2 }}</h2>
+                </div>
+                <div class="rounded-circle bg-warning bg-opacity-10 text-warning p-3 fs-3">
+                    <i class="fa-solid fa-indian-rupee-sign"></i>
+                </div>
+            </div>
+            <div class="small text-muted">
+                <i class="fa-solid fa-shield-check text-success me-1"></i> Settled via Razorpay Gateway
+            </div>
+        </div>
+    </div>
+
+    <!-- Tuition Revenue -->
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white border-start border-4 border-info">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h6 class="text-muted text-uppercase small fw-semibold mb-1">Course Tuition Revenue</h6>
+                    <h2 class="fw-bold text-info mb-0">₹{{ total_tuition_revenue|floatformat:2 }}</h2>
+                </div>
+                <div class="rounded-circle bg-info bg-opacity-10 text-info p-3 fs-3">
+                    <i class="fa-solid fa-book-open"></i>
+                </div>
+            </div>
+            <div class="small text-muted">
+                Per-credit course tuition collections
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive Chart.js Graphs Row -->
+<div class="row g-4 mb-4">
+    <!-- Student Payment Progress Pie Chart -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100 text-center">
+            <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-chart-pie text-success me-2"></i> Student Fee Payment Ratio</h6>
+            <div style="height: 220px; position: relative;">
+                <canvas id="paymentProgressChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Departmental Revenue Doughnut Chart -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100 text-center">
+            <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-building-columns text-primary me-2"></i> Revenue by Department</h6>
+            <div style="height: 220px; position: relative;">
+                <canvas id="deptRevenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Enrolled Courses Bar Chart -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100 text-center">
+            <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-chart-column text-warning me-2"></i> Top Course Enrollments</h6>
+            <div style="height: 220px; position: relative;">
+                <canvas id="topCoursesChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Revenue Distribution & Popular Courses Row -->
+<div class="row g-4 mb-4">
+    <!-- Fee Category Breakdown -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+            <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-chart-bar text-primary me-2"></i> Revenue Breakdown by Category</h5>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Category</th>
+                            <th>Calculation Rate</th>
+                            <th class="text-end">Collected Revenue (INR)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong class="text-primary">Course Tuition Fees</strong></td>
+                            <td>Sum of Course Credits × Fee/Cr</td>
+                            <td class="text-end fw-bold">₹{{ total_tuition_revenue|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Semester Examination Fee</td>
+                            <td>₹1,500 per paid student</td>
+                            <td class="text-end">₹{{ total_exam_revenue|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Digital Library & E-Journal Access</td>
+                            <td>₹1,000 per paid student</td>
+                            <td class="text-end">₹{{ total_library_revenue|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Campus Infrastructure Fee</td>
+                            <td>₹2,500 per paid student</td>
+                            <td class="text-end">₹{{ total_infrastructure_revenue|floatformat:2 }}</td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="table-dark">
+                        <tr>
+                            <th colspan="2" class="ps-3 fs-5">Total Gross Collections</th>
+                            <th class="text-end pe-3 fs-4 text-warning">₹{{ total_revenue|floatformat:2 }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popular Courses -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-fire text-danger me-2"></i> Top Enrolled Courses</h5>
+                <a href="{% url 'admin_course_list' %}" class="btn btn-sm btn-outline-primary rounded-pill">Manage Courses</a>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for c in top_courses %}
+                <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge bg-primary bg-opacity-10 text-primary fw-bold me-1">{{ c.code }}</span>
+                        <strong class="text-dark">{{ c.title }}</strong>
+                        <div class="small text-muted">{{ c.credits }} Credits &bull; ₹{{ c.total_course_fee|floatformat:2 }}</div>
+                    </div>
+                    <span class="badge bg-success rounded-pill px-3 py-2 fs-7">
+                        {{ c.enrolled_count }} Enrolled
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header bg-white py-3 px-4 border-0 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold text-dark mb-0">Recent Razorpay Transactions</h5>
+                <a href="{% url 'payment_history' %}" class="btn btn-sm btn-outline-secondary rounded-pill">View All Transactions</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Transaction ID</th>
+                            <th>Student</th>
+                            <th>Amount</th>
+                            <th>Razorpay Payment ID</th>
+                            <th>Status</th>
+                            <th class="text-end pe-4">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in recent_payments %}
+                        <tr>
+                            <td class="ps-4"><code>{{ p.transaction_id }}</code></td>
+                            <td>
+                                <strong class="text-dark">{{ p.user.get_full_name }}</strong>
+                                <div class="small text-muted">{{ p.user.email }}</div>
+                            </td>
+                            <td class="fw-bold text-success">₹{{ p.amount|floatformat:2 }}</td>
+                            <td><code>{{ p.razorpay_payment_id|default:"pay_test" }}</code></td>
+                            <td><span class="badge bg-success px-3 py-1 rounded-pill">SUCCESS</span></td>
+                            <td class="text-end pe-4">{{ p.created_at|date:"M d, Y - H:i" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">No completed transactions found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // 1. Payment Progress Pie Chart
+    var ctx1 = document.getElementById('paymentProgressChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'pie',
+        data: {
+            labels: ['Paid Fees', 'Pending Fees'],
+            datasets: [{
+                data: [{{ paid_students_count }}, {{ pending_students_count }}],
+                backgroundColor: ['#10b981', '#f59e0b'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    // 2. Department Revenue Doughnut Chart
+    var ctx2 = document.getElementById('deptRevenueChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: {{ dept_labels_json|safe }},
+            datasets: [{
+                data: {{ dept_revenue_json|safe }},
+                backgroundColor: ['#2563eb', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    // 3. Top Courses Bar Chart
+    var ctx3 = document.getElementById('topCoursesChart').getContext('2d');
+    new Chart(ctx3, {
+        type: 'bar',
+        data: {
+            labels: {{ top_course_codes_json|safe }},
+            datasets: [{
+                label: 'Enrolled Students',
+                data: {{ top_course_counts_json|safe }},
+                backgroundColor: '#3b82f6',
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+</script>
+{% endblock %}

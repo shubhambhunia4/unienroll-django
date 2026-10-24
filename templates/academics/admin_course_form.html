@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | UniEnroll Admin{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-8 col-lg-7">
+        <div class="card card-dit shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="card-header bg-gradient bg-primary text-white py-4 px-4 px-md-5" style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-white text-primary p-3 shadow-sm fs-3">
+                        <i class="fa-solid fa-book-medical text-primary"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0 text-white">{{ title }}</h4>
+                        <small class="text-light opacity-75">Configure course credits, tuition rate, and department details</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="{{ form.code.id_for_label }}" class="form-label fw-semibold">Course Code</label>
+                            {{ form.code }}
+                            {% if form.code.errors %}<div class="text-danger small mt-1">{{ form.code.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-8">
+                            <label for="{{ form.title.id_for_label }}" class="form-label fw-semibold">Course Title</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-12">
+                            <label for="{{ form.department.id_for_label }}" class="form-label fw-semibold">Department</label>
+                            {{ form.department }}
+                            {% if form.department.errors %}<div class="text-danger small mt-1">{{ form.department.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ form.credits.id_for_label }}" class="form-label fw-semibold">Academic Credits</label>
+                            {{ form.credits }}
+                            {% if form.credits.errors %}<div class="text-danger small mt-1">{{ form.credits.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="{{ form.fee_per_credit.id_for_label }}" class="form-label fw-semibold">Fee per Credit (INR ₹)</label>
+                            {{ form.fee_per_credit }}
+                            {% if form.fee_per_credit.errors %}<div class="text-danger small mt-1">{{ form.fee_per_credit.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-12">
+                            <label for="{{ form.description.id_for_label }}" class="form-label fw-semibold">Course Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <a href="{% url 'admin_course_list' %}" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 fw-bold shadow-sm">
+                            <i class="fa-solid fa-save me-2"></i> Save Course Details
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

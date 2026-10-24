@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Account Settings & Security | UniEnroll{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="hero-banner p-4 p-md-5 rounded-4 shadow-sm bg-primary text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-white text-primary p-3 fs-2 shadow-sm">
+                    <i class="fa-solid fa-user-gear"></i>
+                </div>
+                <div>
+                    <span class="badge bg-warning text-dark mb-1 px-3 py-1 rounded-pill fw-bold text-uppercase">
+                        <i class="fa-solid fa-shield-halved me-1"></i> User Preferences
+                    </span>
+                    <h2 class="display-6 fw-bold mb-0">Account Settings & Security</h2>
+                    <p class="mb-0 text-light opacity-90">Manage your profile details and update your account password.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Profile Information Form -->
+    <div class="col-md-6">
+        <div class="card card-dit h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header bg-white py-3 px-4 border-0">
+                <h5 class="fw-bold text-primary mb-0"><i class="fa-solid fa-id-card me-2"></i> Update Profile Information</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_profile">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Email Address (Read-only)</label>
+                        <input type="email" class="form-control bg-light" value="{{ user.email }}" readonly>
+                        <small class="text-muted">Email serves as your unique login identifier.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">First Name</label>
+                        <input type="text" name="first_name" class="form-control" value="{{ user.first_name }}" required>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Last Name</label>
+                        <input type="text" name="last_name" class="form-control" value="{{ user.last_name }}" required>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm">
+                            <i class="fa-solid fa-save me-2"></i> Save Profile Details
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Change Form -->
+    <div class="col-md-6">
+        <div class="card card-dit h-100 border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header bg-white py-3 px-4 border-0">
+                <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-key me-2 text-warning"></i> Change Account Password</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="change_password">
+
+                    {% for field in password_form %}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">{{ field.label }}</label>
+                            <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" class="form-control" required>
+                            {% if field.errors %}
+                                <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-warning btn-lg text-dark rounded-pill fw-bold shadow-sm">
+                            <i class="fa-solid fa-lock me-2"></i> Update Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

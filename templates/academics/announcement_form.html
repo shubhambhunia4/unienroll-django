@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Publish Announcement | UniEnroll Admin{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-8 col-lg-6">
+        <div class="card card-dit shadow-lg border-0 rounded-4 overflow-hidden">
+            <div class="card-header bg-gradient bg-primary text-white py-4 px-4 px-md-5" style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-white text-primary p-3 shadow-sm fs-3">
+                        <i class="fa-solid fa-bullhorn text-primary"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0 text-white">Publish University Notice</h4>
+                        <small class="text-light opacity-75">Broadcast official alerts to all students & faculty</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Notice Title</label>
+                        <input type="text" name="title" class="form-control form-control-lg" placeholder="e.g. Fall 2026 Registration Deadline Extended" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Category</label>
+                        <select name="category" class="form-select">
+                            <option value="GENERAL">General Notice</option>
+                            <option value="URGENT">Urgent Announcement</option>
+                            <option value="EXAM">Examinations & Grades</option>
+                            <option value="FEES">Semester Fees & Deadlines</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Notice Content / Details</label>
+                        <textarea name="content" class="form-control" rows="5" placeholder="Enter detailed announcement message..." required></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                        <a href="{% url 'announcements_list' %}" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 fw-bold shadow-sm">
+                            <i class="fa-solid fa-paper-plane me-2"></i> Broadcast Notice
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Course Management | UniEnroll{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="hero-banner p-4 p-md-5 rounded-4 shadow-sm bg-primary text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <span class="badge bg-warning text-dark mb-2 px-3 py-1 rounded-pill fw-bold text-uppercase">
+                        <i class="fa-solid fa-sliders me-1"></i> Admin Catalog Control
+                    </span>
+                    <h2 class="display-6 fw-bold mb-1">Academic Course Management</h2>
+                    <p class="mb-0 text-light opacity-90">Add new courses, edit credit allocations, set tuition fee rates, or remove courses from catalog.</p>
+                </div>
+                <div>
+                    <a href="{% url 'admin_course_create' %}" class="btn btn-warning btn-lg fw-bold px-4 rounded-pill shadow text-dark">
+                        <i class="fa-solid fa-plus me-2"></i> Add New Course
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-header bg-white py-3 px-4 border-0 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold text-dark mb-0">Offered Academic Courses ({{ total_courses_count }})</h5>
+        <a href="{% url 'admin_course_create' %}" class="btn btn-sm btn-success rounded-pill px-3 fw-bold">
+            <i class="fa-solid fa-plus me-1"></i> Add Course
+        </a>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-4">Code</th>
+                    <th>Course Title</th>
+                    <th>Department</th>
+                    <th>Credits</th>
+                    <th>Rate / Credit</th>
+                    <th>Total Course Fee</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in courses %}
+                <tr>
+                    <td class="ps-4">
+                        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold fs-6">
+                            {{ course.code }}
+                        </span>
+                    </td>
+                    <td>
+                        <strong class="text-dark d-block">{{ course.title }}</strong>
+                        <small class="text-muted text-truncate d-inline-block" style="max-width: 320px;">{{ course.description }}</small>
+                    </td>
+                    <td>{{ course.department.name }}</td>
+                    <td>
+                        <span class="badge bg-secondary bg-opacity-10 text-dark px-3 py-1 rounded-pill fw-medium">
+                            {{ course.credits }} Credits
+                        </span>
+                    </td>
+                    <td>₹{{ course.fee_per_credit|floatformat:2 }}</td>
+                    <td class="fw-bold text-success">₹{{ course.total_course_fee|floatformat:2 }}</td>
+                    <td class="text-end pe-4">
+                        <div class="d-inline-flex gap-2">
+                            <a href="{% url 'admin_course_edit' course.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                <i class="fa-solid fa-pen-to-square me-1"></i> Edit
+                            </a>
+                            <a href="{% url 'admin_course_delete' course.id %}" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                <i class="fa-solid fa-trash me-1"></i> Drop
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">No courses found in database.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

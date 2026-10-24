@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}404 Page Not Found | UniEnroll{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-8 col-lg-6 text-center">
+        <div class="glass-card p-5 rounded-4 shadow-lg bg-white">
+            <div class="display-1 text-warning fw-bold mb-3">
+                <i class="fa-solid fa-compass-drafting me-2"></i>404
+            </div>
+            <h2 class="fw-bold text-dark mb-2">Page Not Found</h2>
+            <p class="text-muted mb-4">
+                The requested academic URL or resource could not be found on the UniEnroll server.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'home' %}" class="btn btn-outline-secondary px-4 rounded-pill fw-medium">
+                    <i class="fa-solid fa-house me-1"></i> Home
+                </a>
+                {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="btn btn-primary px-4 rounded-pill fw-bold">
+                    <i class="fa-solid fa-gauge me-1"></i> Student Dashboard
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

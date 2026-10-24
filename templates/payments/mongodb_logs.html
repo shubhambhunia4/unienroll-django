@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}MongoDB Compass Audit Logs Viewer | UniEnroll Admin{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="hero-banner p-4 p-md-5 rounded-4 shadow-sm bg-dark text-white" style="background: linear-gradient(135deg, #022c22 0%, #0f172a 100%);">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <span class="badge bg-success text-white mb-2 px-3 py-1 rounded-pill fw-bold text-uppercase">
+                        <i class="fa-solid fa-database me-1"></i> MongoDB Compass Integration
+                    </span>
+                    <h2 class="display-6 fw-bold mb-1">Live Transaction Audit Trail</h2>
+                    <p class="mb-0 text-light opacity-90">
+                        Database: <strong>{{ mongo_db_name }}</strong> &bull; Collection: <strong>payment_audit_logs</strong>
+                    </p>
+                </div>
+                <div>
+                    <a href="{% url 'admin_analytics' %}" class="btn btn-outline-light px-4 rounded-pill fw-medium">
+                        <i class="fa-solid fa-chart-pie me-1"></i> Analytics Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if error_msg %}
+<div class="alert alert-warning alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
+    <i class="fa-solid fa-triangle-exclamation me-2"></i> {{ error_msg }}
+</div>
+{% endif %}
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+    <div class="card-header bg-white py-3 px-4 border-0 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold text-dark mb-0">Recent MongoDB Audit Log Events ({{ audit_logs_count }})</h5>
+        <span class="badge bg-success rounded-pill px-3 py-2">
+            <i class="fa-solid fa-signal me-1"></i> {{ mongo_status }}
+        </span>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-4">Timestamp (UTC)</th>
+                    <th>Event Type</th>
+                    <th>Transaction ID</th>
+                    <th>Student ID</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th class="text-end pe-4">JSON Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in audit_logs %}
+                <tr>
+                    <td class="ps-4 text-muted small">
+                        {{ log.timestamp|date:"Y-m-d H:i:s" }}
+                    </td>
+                    <td>
+                        {% if log.event_type == 'PAYMENT_SUCCESSFUL' %}
+                            <span class="badge bg-success px-3 py-1 rounded-pill fw-bold">PAYMENT_SUCCESSFUL</span>
+                        {% else %}
+                            <span class="badge bg-info bg-opacity-10 text-info px-3 py-1 rounded-pill fw-bold">{{ log.event_type }}</span>
+                        {% endif %}
+                    </td>
+                    <td><code>{{ log.transaction_id }}</code></td>
+                    <td>Student #{{ log.student_id }}</td>
+                    <td class="fw-bold text-success">₹{{ log.amount|floatformat:2 }}</td>
+                    <td>
+                        {% if log.status == 'SUCCESS' %}
+                            <span class="badge bg-success rounded-pill px-3">SUCCESS</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark rounded-pill px-3">{{ log.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end pe-4">
+                        <button class="btn btn-sm btn-outline-dark rounded-pill px-3" type="button" data-bs-toggle="collapse" data-bs-target="#json-{{ forloop.counter }}">
+                            <i class="fa-solid fa-code me-1"></i> Inspect JSON
+                        </button>
+                    </td>
+                </tr>
+                <tr class="collapse bg-light" id="json-{{ forloop.counter }}">
+                    <td colspan="7" class="p-3">
+                        <pre class="bg-dark text-success p-3 rounded-3 mb-0 font-monospace small"><code>{{ log.details_json }}</code></pre>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="fa-solid fa-database display-4 mb-3 d-block"></i>
+                        No audit log events recorded yet in MongoDB collection `payment_audit_logs`.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

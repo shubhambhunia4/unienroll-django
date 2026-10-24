@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm Delete Course | UniEnroll Admin{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="card card-dit shadow-lg border-0 rounded-4 overflow-hidden text-center p-4">
+            <div class="mb-3">
+                <div class="rounded-circle bg-danger bg-opacity-10 text-danger d-inline-flex p-4 mb-3 fs-1">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <h4 class="fw-bold text-dark">Drop & Delete Course?</h4>
+                <p class="text-muted">Are you sure you want to permanently drop and delete the course <strong>{{ course.code }} - {{ course.title }}</strong> from the catalog?</p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-danger btn-lg rounded-pill fw-bold shadow-sm py-3">
+                        <i class="fa-solid fa-trash me-2"></i> Yes, Drop & Delete Course
+                    </button>
+                    <a href="{% url 'admin_course_list' %}" class="btn btn-outline-secondary rounded-pill py-2">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Receipt | UniEnroll{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        #printable-receipt, #printable-receipt * {
+            visibility: visible;
+        }
+        #printable-receipt {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+        }
+        .no-print {
+            display: none !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-4">
+    <div class="col-lg-9">
+        <!-- Action bar -->
+        <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+            <div class="d-flex gap-2">
+                <a href="{% url 'my_courses' %}" class="btn btn-success rounded-pill px-4 fw-bold">
+                    <i class="fa-solid fa-book-open me-1"></i> View Registered Courses
+                </a>
+                <button onclick="window.print()" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+                    <i class="fa-solid fa-print me-1"></i> Print / Download Receipt
+                </button>
+            </div>
+        </div>
+
+        <!-- Official Printable Receipt Card -->
+        <div id="printable-receipt" class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white p-4 p-md-5">
+            <!-- Header Header -->
+            <div class="row border-bottom pb-4 mb-4 align-items-center">
+                <div class="col-md-7">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle bg-primary text-white p-3 fs-2 fw-bold">
+                            <i class="fa-solid fa-university"></i>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold text-dark mb-0">Demo Institute of Technology</h3>
+                            <p class="text-muted mb-0 small">Office of Academic Accounts & Semester Registrations</p>
+                            <span class="badge bg-primary bg-opacity-10 text-primary mt-1">Official E-Receipt</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5 text-md-end mt-3 mt-md-0">
+                    <h5 class="fw-bold text-success mb-1"><i class="fa-solid fa-circle-check me-1"></i> PAYMENT CONFIRMED</h5>
+                    <div class="small text-muted"><strong>Receipt Date:</strong> {{ payment.created_at|date:"F d, Y - H:i:s" }}</div>
+                    <div class="small text-muted"><strong>Transaction ID:</strong> <code class="text-dark">{{ payment.transaction_id }}</code></div>
+                    <div class="small text-muted"><strong>Razorpay Payment ID:</strong> <code class="text-dark">{{ payment.razorpay_payment_id|default:"pay_demo_test" }}</code></div>
+                </div>
+            </div>
+
+            <!-- Student Details -->
+            <div class="row bg-light rounded-3 p-3 mb-4">
+                <div class="col-md-6 mb-2 mb-md-0">
+                    <small class="text-muted d-block text-uppercase fw-semibold">Student Information</small>
+                    <strong class="text-dark fs-5">{{ user.get_full_name }}</strong>
+                    <div class="text-muted small"><i class="fa-solid fa-envelope me-1"></i> {{ user.email }}</div>
+                    <div class="text-muted small"><i class="fa-solid fa-user-tag me-1"></i> Role: {{ user.get_role_display }}</div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <small class="text-muted d-block text-uppercase fw-semibold">Academic Term Details</small>
+                    <strong class="text-primary fs-5">{{ enrollment.semester.name }}</strong>
+                    <div class="text-muted small">Semester Credit Limit: {{ enrollment.semester.max_credits }} Credits</div>
+                    <div class="text-muted small">Total Registered Credits: <strong>{{ enrollment.total_credits }} Credits</strong></div>
+                </div>
+            </div>
+
+            <!-- Itemized Table -->
+            <h6 class="fw-bold text-dark mb-3 text-uppercase"><i class="fa-solid fa-receipt me-1 text-primary"></i> Registered Courses & Fee Breakdown</h6>
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Course Code & Title</th>
+                            <th>Department</th>
+                            <th>Credits</th>
+                            <th class="text-end">Amount (INR)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in enrolled_items %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <strong class="text-primary">{{ item.course.code }}</strong> - {{ item.course.title }}
+                            </td>
+                            <td>{{ item.course.department.code }}</td>
+                            <td>{{ item.course.credits }} Cr</td>
+                            <td class="text-end">₹{{ item.course.total_course_fee|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                        
+                        <!-- Fixed Fees -->
+                        <tr>
+                            <td colspan="4" class="text-end">Semester Examination Fee</td>
+                            <td class="text-end">₹{{ fee.exam_fee|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-end">Digital Library & E-Journal Access</td>
+                            <td class="text-end">₹{{ fee.library_fee|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-end">Campus & Infrastructure Development Fee</td>
+                            <td class="text-end">₹{{ fee.infrastructure_fee|floatformat:2 }}</td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="table-group-divider">
+                        <tr class="fs-5 fw-bold bg-light">
+                            <td colspan="4" class="text-end text-dark">Total Amount Paid</td>
+                            <td class="text-end text-success fs-4">₹{{ payment.amount|floatformat:2 }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Footer Details & Security Stamp -->
+            <div class="row align-items-center border-top pt-4 mt-2">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="p-2 border rounded-3 bg-light text-center" style="width: 70px;">
+                            <i class="fa-solid fa-qrcode fs-1 text-dark"></i>
+                        </div>
+                        <div class="small text-muted">
+                            <div><strong>Payment Method:</strong> Razorpay Secure Gateway</div>
+                            <div><strong>MongoDB Audit Reference:</strong> <code>unienroll_logs.payment_audit_logs</code></div>
+                            <div>This is a computer-generated digital receipt for DIT UniEnroll. No signature required.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <div class="badge bg-success text-white py-2 px-3 rounded-pill fs-7">
+                        <i class="fa-solid fa-lock me-1"></i> VERIFIED TRANSACTION
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

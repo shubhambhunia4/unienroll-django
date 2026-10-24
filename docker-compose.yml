@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: gunicorn --bind 0.0.0.0:8000 config.wsgi:application
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=django-insecure-unienroll-demo-key-2026-dit-academic-system
+      - MONGO_URI=mongodb://mongo:27017/
+      - MONGO_DB_NAME=unienroll_logs
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:latest
+    container_name: unienroll_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:

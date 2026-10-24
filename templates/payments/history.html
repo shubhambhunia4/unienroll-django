@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Payment History | UniEnroll{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="hero-banner p-4 p-md-5 rounded-4 shadow-sm bg-primary text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);">
+            <h2 class="display-6 fw-bold mb-1">Payment History & Receipts</h2>
+            <p class="mb-0 text-light opacity-90">View all past payment transactions and download official receipts.</p>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table align-middle table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-4">Transaction ID</th>
+                    <th>Semester</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th class="text-end pe-4">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in payments %}
+                <tr>
+                    <td class="ps-4">
+                        <code>{{ p.transaction_id }}</code>
+                    </td>
+                    <td>{{ p.enrollment.semester.name }}</td>
+                    <td class="fw-bold text-success">₹{{ p.amount|floatformat:2 }}</td>
+                    <td>
+                        {% if p.status == 'SUCCESS' %}
+                            <span class="badge bg-success px-3 py-1 rounded-pill">Success</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark px-3 py-1 rounded-pill">{{ p.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ p.created_at|date:"M d, Y - H:i" }}</td>
+                    <td class="text-end pe-4">
+                        {% if p.status == 'SUCCESS' %}
+                        <a href="{% url 'payment_receipt' p.transaction_id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                            <i class="fa-solid fa-receipt me-1"></i> Receipt
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">No payment records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

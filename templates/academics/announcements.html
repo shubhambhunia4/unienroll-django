@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}University Notice Board | UniEnroll{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="hero-banner p-4 p-md-5 rounded-4 shadow-sm bg-primary text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <span class="badge bg-warning text-dark mb-2 px-3 py-1 rounded-pill fw-bold text-uppercase">
+                        <i class="fa-solid fa-bullhorn me-1"></i> Official Communications
+                    </span>
+                    <h2 class="display-6 fw-bold mb-1">University Notice Board</h2>
+                    <p class="mb-0 text-light opacity-90">Official DIT academic notices, exam schedules, and fee registration deadlines.</p>
+                </div>
+                {% if is_admin_user %}
+                <div>
+                    <a href="{% url 'announcement_create' %}" class="btn btn-warning btn-lg fw-bold px-4 rounded-pill shadow text-dark">
+                        <i class="fa-solid fa-plus me-2"></i> Post Announcement
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        {% for a in announcements %}
+        <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+            <div class="card-header bg-white py-3 px-4 border-0 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    {% if a.category == 'URGENT' %}
+                        <span class="badge bg-danger px-3 py-2 rounded-pill fw-bold"><i class="fa-solid fa-triangle-exclamation me-1"></i> URGENT</span>
+                    {% elif a.category == 'EXAM' %}
+                        <span class="badge bg-info bg-opacity-10 text-info px-3 py-2 rounded-pill fw-bold"><i class="fa-solid fa-award me-1"></i> EXAMS</span>
+                    {% elif a.category == 'FEES' %}
+                        <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold"><i class="fa-solid fa-indian-rupee-sign me-1"></i> FEES & DEADLINES</span>
+                    {% else %}
+                        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold"><i class="fa-solid fa-bell me-1"></i> GENERAL</span>
+                    {% endif %}
+                    <h5 class="fw-bold text-dark mb-0 ms-2">{{ a.title }}</h5>
+                </div>
+                <small class="text-muted"><i class="fa-solid fa-clock me-1"></i> {{ a.created_at|date:"M d, Y - H:i" }}</small>
+            </div>
+            <div class="card-body p-4 pt-1">
+                <p class="card-text text-dark fs-6" style="white-space: pre-line;">{{ a.content }}</p>
+            </div>
+            <div class="card-footer bg-light border-0 py-2 px-4 text-end">
+                <small class="text-muted">Issued by: <strong>{{ a.created_by.get_full_name|default:"DIT Administration" }}</strong></small>
+            </div>
+        </div>
+        {% empty %}
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center text-muted bg-white">
+            <i class="fa-solid fa-bullhorn display-1 mb-3"></i>
+            <h4>No active university announcements right now.</h4>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+            <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-calendar-days text-primary me-2"></i> Key Academic Dates</h5>
+            <ul class="list-unstyled mb-0">
+                <li class="py-2 border-bottom">
+                    <strong class="d-block text-dark">Course Enrollment Deadline</strong>
+                    <small class="text-muted">Fall 2026 Registration Period</small>
+                </li>
+                <li class="py-2 border-bottom">
+                    <strong class="d-block text-dark">Semester Fee Payment Clearance</strong>
+                    <small class="text-muted">Prior to Midterm Examinations</small>
+                </li>
+                <li class="py-2">
+                    <strong class="d-block text-dark">Grade Roster & Transcript Issuance</strong>
+                    <small class="text-muted">Issued upon fee settlement</small>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
